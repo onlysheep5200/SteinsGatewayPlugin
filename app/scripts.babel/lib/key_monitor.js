@@ -1,6 +1,6 @@
 'use strict';
 class KeyMonitor {
-	constructor(commnads) {
+	constructor(commands) {
 		// code
 		this.keyMapping = {};
 		this.functionalKeys = ['ctrl','alt','meta','shift']; //long 应放在按键描述的末尾
@@ -9,10 +9,13 @@ class KeyMonitor {
 			'enter' : '\r',
 			'tab'	: '\t'
 		}
-		this.commnads = commnads;
 		this.executingCommand = null;
 		this.isLongPressNow = false;
 		this.lastPressedKey = null;
+		this.commands = commands;
+		for(let key in commands){
+			this.register(key,commands[key]);
+		}
 	}
 
 	// methods
@@ -22,13 +25,13 @@ class KeyMonitor {
 	register(key_commbination,command){
 		let keys = key_commbination.split('+');
 		let isLongPress = false;
-		if (!this.commnads[command]) {
+		if (!this.commands[command]) {
 			return false;
 		};
 		if (!keys) {
 			return false;
 		};
-		this._transformSpecialKeys(keys);
+		keys = this._transformSpecialKeys(keys);
 		if (keys.length > 1) {
 			//判断是否长按
 			if (keys[keys.length-1] == 'long') {
@@ -41,7 +44,8 @@ class KeyMonitor {
 			return false;
 		};
 		let watchingKey = keys.join('+');
-		this.keyMapping[watchingKey] = {'op':this.commnads[command],'is_long_press':isLongPress};
+		this.keyMapping[watchingKey] = {'op':this.commands[command],'is_long_press':isLongPress};
+		console.log(this.keyMapping);
 	}
 
 
@@ -52,28 +56,31 @@ class KeyMonitor {
 			let currentUpKeys = [];
 			document.onkeydown = function(e){
 				self._preventEventDefault(e);
-				for(let key in this.keyMapping){
-					if (this.isKeyPressed(key,e)) {
-						if (this.executingCommand) {
+				for(let key in self.keyMapping){
+					if (self.isKeyPressed(key,e)) {
+						console.log('key '+key+' is pressed');
+						if (self.executingCommand) {
 							//停止当前执行的命令，以便执行新命令
-							this.executingCommand.stop();
+							self.executingCommand.stop();
 						};
-						let item = this.keyMapping[key];
-						this.executingCommand = item['op'];
-						this.isLongPressNow = item['is_long_press'];
-						this.lastPressedKey = key;
-						this.executingCommand.start();
+						let item = self.keyMapping[key];
+						self.executingCommand = item['op'];
+						self.isLongPressNow = item['is_long_press'];
+						self.lastPressedKey = key;
+						self.executingCommand.start();
 						break;
-					};
+					}else{
+						console.log(key+' is not pressed ');
+					}
 				}
 			}
 			document.onkeyup = function(e){
 				self._preventEventDefault(e);
-				if (!this.isLongPressNow) {
+				if (!self.isLongPressNow) {
 					return;
 				};
 				self._addUnpressedKey(e,currentUpKeys);
-				if (currentUpKeys.join('+')) == self.lastPressedKey) {
+				if (currentUpKeys.join('+') === self.lastPressedKey) {
 					self.executingCommand.stop();
 					self.executingCommand = null;
 					self.lastPressedKey = null;
@@ -84,8 +91,8 @@ class KeyMonitor {
 		};
 	}
 
-	isKeyPressed(key,event){
-		let isKeyPressed = false;
+	isKeyPressed(key,e){
+		let isKeyPressed = true;
 		let indeedKey = this._getIndeedMonitotedKey(key);
 		for(let k in indeedKey){
 			if (k != 'char') {
@@ -101,7 +108,7 @@ class KeyMonitor {
 
 	_transformSpecialKeys(keys){
 		let self = this ;
-		keys.map(key => {
+		return keys.map(key => {
 			if (key in self.specialKeys) {
 				return self.specialKeys[key];
 			};
@@ -111,7 +118,7 @@ class KeyMonitor {
 
 	_normailizeKeys(keys){
 		let self = this;
-		keys.map( key => {
+		keys = keys.map( key => {
 				if (self.functionalKeys.indexOf(key.toLocaleLowerCase()) >= 0) {
 					return key.toLocaleLowerCase();
 				}else if (self.legalCharPattern.test(key)){

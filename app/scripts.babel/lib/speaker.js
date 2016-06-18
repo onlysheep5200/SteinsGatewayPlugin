@@ -4,7 +4,7 @@ class Speaker{
 	constructor(){
 		this.speaker = window.speechSynthesis;
 		this.rate = 1;
-		this.currentSpeakText = null;
+		this.currentSpeakTexts = null;
 
 	}
 
@@ -26,14 +26,20 @@ class Speaker{
 		};
 	}
 
-	speak(txt){
-		this.currentSpeakText = txt;
+	speak(txt_list){
+		if (!(txt_list instanceof Array)) {
+			txt_list = [txt_list]
+		};
+		console.log(txt_list);
+		this.currentSpeakTexts = txt_list;
 		if (this.speaker.speaking || this.speaker.pending) {
 			this.speaker.pause();
 			this.speaker.cancel();
 		};
-		let utter = new SpeechSynthesisUtterance(txt);
-		utter.rate = this.rate;
-		this.speaker.speak(utter);
+		txt_list.every(txt => {
+			// let utter = new SpeechSynthesisUtterance(txt);
+			// utter.rate = this.rate;
+			this.speaker.speak(new SpeechSynthesisUtterance(txt));
+		})
 	}
 }

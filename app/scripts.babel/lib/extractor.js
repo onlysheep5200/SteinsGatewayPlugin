@@ -19,7 +19,13 @@ class SinaWeiboExtrator extends Extractor{
 	/**
 		item : 
 			{
-				
+				author : '作者',
+				submitTime : '发布时间',
+				content : '内容'
+				mainJqItem : jquery dom对象
+				handler : 每条微博下对应转发、评论等功能的工具栏
+				is_reference : 是否为转发
+				reference : item object
 			}
 	*/
 
@@ -31,6 +37,7 @@ class SinaWeiboExtrator extends Extractor{
 		this.currentSpeakIndex = 1000;
 		this.weboItems = {};
 		this.parsedNum = 0;
+		this.initialized = false;
 	}
 
 	addItems(jqDomItems){
@@ -50,12 +57,17 @@ class SinaWeiboExtrator extends Extractor{
 			self.endParsedIndex = self.currentParsedIndex;
 			self.currentParsedIndex++;
 			self.parsedNum += 1;
+			console.log(self.weboItems);
 		});
 		this.currentParsedIndex = this.startParsedIndex;
+		if (this.parsedNum > 0) {
+			this.initialized = true;
+		};
+		console.log(this.weboItems);
 	}
 
 	nextItem(){
-		if (this.currentParsedIndex<=self.endParsedIndex) {
+		if (this.currentParsedIndex<=this.endParsedIndex) {
 			return this.weboItems[this.currentParsedIndex++];
 		}
 		else{
@@ -89,11 +101,17 @@ class SinaWeiboExtrator extends Extractor{
 		}
 	}
 
+	isInit(){
+		return this.initialized;
+	}
+
 	_parsed(item){
+		let parsed = {};
 		parsed['author'] = item.find('.WB_info').find('a').text();
 		parsed['submitTime'] = item.find('.WB_from > a[node-type="feed_list_item_date"]').attr('title');
 		parsed['content'] = item.find('.WB_text').text();
 		parsed['mainJqItem'] = item;
 		parsed['handler'] = item.find('.WB_handle');
+		return parsed;
 	}
 }

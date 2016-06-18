@@ -44,11 +44,16 @@
   "content_scripts": [
     {
       "matches": [
-        "http://*/*",
+        "http://weibo.com/*",
         "https://*/*"
       ],
       "js": [
         "scripts/jquery.js",
+        "scripts/lib/speaker.js",
+        "scripts/lib/extractor.js",
+        "scripts/lib/key_monitor.js",
+        "scripts/lib/commands.js",
+        "scripts/lib/utils.js",
         "scripts/contentscript.js"
       ],
       "run_at": "document_end",
