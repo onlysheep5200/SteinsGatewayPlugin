@@ -14,7 +14,7 @@ class Extractor{
 	getItem(index){}
 }
 
-class SinaWeiboExtrator{
+class SinaWeiboExtrator extends Extractor{
 
 	/**
 		item : 
@@ -24,10 +24,13 @@ class SinaWeiboExtrator{
 	*/
 
 	constructor(){
-		this.currentParsedItemNum = 0;
+		super();
 		this.startParsedIndex = 1000;
+		this.currentParsedIndex = 1000;
+		this.endParsedIndex = this.currentParsedIndex;
 		this.currentSpeakIndex = 1000;
 		this.weboItems = {};
+		this.parsedNum = 0;
 	}
 
 	addItems(jqDomItems){
@@ -42,7 +45,48 @@ class SinaWeiboExtrator{
 			}else{
 				parsed['is_refference'] = false;
 			}
+			self.weboItems[self.currentParsedIndex] = parsed;
+			item.addClass('parsed-by-steins').addClass('parsed-index-'+self.currentParsedIndex);
+			self.endParsedIndex = self.currentParsedIndex;
+			self.currentParsedIndex++;
+			self.parsedNum += 1;
 		});
+		this.currentParsedIndex = this.startParsedIndex;
+	}
+
+	nextItem(){
+		if (this.currentParsedIndex<=self.endParsedIndex) {
+			return this.weboItems[this.currentParsedIndex++];
+		}
+		else{
+			return null;
+		}
+	}
+
+	currentItemList(){
+		return this.weboItems;
+	}
+
+	totalItemNum(){
+		return this.parsedNum;
+	}
+
+	prevItem(){
+		if (this.currentParsedIndex<=this.startParsedIndex) {
+			return null;
+		}else{
+			return this.weboItems[--this.currentParsedIndex];
+		}
+	}
+
+	getItem(index){
+		if (index < this.startParsedIndex && (this.startParsedIndex+index) <= this.endParsedIndex) {
+			return this.weboItems[this.startParsedIndex+index];
+		}else if (index >= this.startParsedIndex && index <= this.endParsedIndex){
+			return this.weboItems[index];
+		}else{
+			return null;
+		}
 	}
 
 	_parsed(item){
